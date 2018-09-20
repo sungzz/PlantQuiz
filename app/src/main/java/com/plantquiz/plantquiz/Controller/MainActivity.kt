@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     var correctAnswerIndex: Int = 0
     var correctPlant: Plant? = null
+    
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
