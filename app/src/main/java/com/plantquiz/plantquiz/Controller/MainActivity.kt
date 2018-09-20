@@ -19,7 +19,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
-import com.plantquiz.plantquiz.Model.DownloadingObject
+import com.plantquiz.plantquiz.Model.ParsePlantUtility
 import com.plantquiz.plantquiz.Model.Plant
 import com.plantquiz.plantquiz.R
 
@@ -40,6 +40,9 @@ class MainActivity : AppCompatActivity() {
 
     val OPEN_CAMERA_BUTTON_REQUEST_ID = 1000
     val OPEN_PHOTO_GALLERY_BUTTON_REQUEST_ID = 2000
+
+    var correctAnswerIndex: Int = 0
+    var correctPlant: Plant? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -226,40 +229,66 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun specifyTheRightAndWrongAnswer(userGuess: Int) {
+
+        when (correctAnswerIndex) {
+            0 -> button1.setBackgroundColor(Color.CYAN)
+            1 -> button2.setBackgroundColor(Color.CYAN)
+            2 -> button3.setBackgroundColor(Color.CYAN)
+            3 -> button4.setBackgroundColor(Color.CYAN)
+        }
+
+        if (userGuess == correctAnswerIndex) {
+            txtState.setText("Right!")
+        } else {
+            var correctPlantName = correctPlant.toString()
+            txtState.setText("Wrong. Choose : $correctPlantName")
+        }
+
+    }
+
 
 
 
     fun button1onclick(buttonView: View) {
 
-        Toast.makeText(this, "Button 1 Onclick ",
-                Toast.LENGTH_SHORT).show()
+//        Toast.makeText(this, "Button 1 Onclick ",
+//                Toast.LENGTH_SHORT).show()
+//
+//        var myNumber = 20
+//        var myName : String = "Santoni"
+//        var numberOfLetter = myName.length
+//
+//
+//        var animalName : String? = null
+//        var numberOfCharacterOfAnimal = animalName?.length ?: 100
 
-        var myNumber = 20
-        var myName : String = "Santoni"
-        var numberOfLetter = myName.length
-
-
-        var animalName : String? = null
-        var numberOfCharacterOfAnimal = animalName?.length ?: 100
+        specifyTheRightAndWrongAnswer(0)
 
     }
 
     fun button2onclick(buttonView: View) {
 
-        Toast.makeText(this, "Button 2 Onclick ",
-                Toast.LENGTH_SHORT).show()
+//        Toast.makeText(this, "Button 2 Onclick ",
+//                Toast.LENGTH_SHORT).show()
+        specifyTheRightAndWrongAnswer(1)
     }
 
     fun button3onclick(buttonView: View) {
 
-        Toast.makeText(this, "Button 3 Onclick ",
-                Toast.LENGTH_SHORT).show()
+//        Toast.makeText(this, "Button 3 Onclick ",
+//                Toast.LENGTH_SHORT).show()
+
+        specifyTheRightAndWrongAnswer(2)
     }
 
     fun button4onclick(buttonView: View) {
 
-        Toast.makeText(this, "Button 4 Onclick ",
-                Toast.LENGTH_SHORT).show()
+//        Toast.makeText(this, "Button 4 Onclick ",
+//                Toast.LENGTH_SHORT).show()
+
+        specifyTheRightAndWrongAnswer(3)
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -283,18 +312,44 @@ class MainActivity : AppCompatActivity() {
 
         override fun doInBackground(vararg p0: String?): List<Plant>? {
 
-            val downloadingObject: DownloadingObject = DownloadingObject()
-            var jsonData = downloadingObject.downloadJSONDataFromLink(
-                    "http://plantplaces.com/perl/mobile/flashcard.pl")
-            Log.i("JSON", jsonData)
+//            val downloadingObject: DownloadingObject = DownloadingObject()
+//            var jsonData = downloadingObject.downloadJSONDataFromLink(
+//                    "http://plantplaces.com/perl/mobile/flashcard.pl")
+//            Log.i("JSON", jsonData)
+
+            val parsePlant = ParsePlantUtility()
 
 
-            return null
+            return parsePlant.parsePlantObjectsFromJSONData()
         }
 
         override fun onPostExecute(result: List<Plant>?) {
             super.onPostExecute(result)
 
+            var numberOfPlants = result?.size ?: 0
+
+            if (numberOfPlants > 0 ) {
+
+                var randomPlantIndexForButton1: Int = (Math.random() * result!!.size).toInt()
+                var randomPlantIndexForButton2: Int = (Math.random() * result!!.size).toInt()
+                var randomPlantIndexForButton3: Int = (Math.random() * result!!.size).toInt()
+                var randomPlantIndexForButton4: Int = (Math.random() * result!!.size).toInt()
+
+                var allRandomPlants = ArrayList<Plant>()
+                allRandomPlants.add(result.get(randomPlantIndexForButton1))
+                allRandomPlants.add(result.get(randomPlantIndexForButton2))
+                allRandomPlants.add(result.get(randomPlantIndexForButton3))
+                allRandomPlants.add(result.get(randomPlantIndexForButton4))
+
+                button1.text = result.get(randomPlantIndexForButton1).toString()
+                button2.text = result.get(randomPlantIndexForButton2).toString()
+                button3.text = result.get(randomPlantIndexForButton3).toString()
+                button4.text = result.get(randomPlantIndexForButton4).toString()
+
+
+                correctAnswerIndex = (Math.random() * allRandomPlants.size).toInt()
+                correctPlant = allRandomPlants.get(correctAnswerIndex)
+            }
 
         }
 

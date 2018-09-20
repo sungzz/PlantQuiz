@@ -6,9 +6,9 @@ import org.json.JSONObject
 class ParsePlantUtility {
 
 
-    fun parsePlantObjectsFromJSONData(search: String?) : List<Plant>? {
+    fun parsePlantObjectsFromJSONData() : List<Plant>? {
 
-        var allPlantObject: ArrayList<Plant> = ArrayList()
+        var allPlantObjects: ArrayList<Plant> = ArrayList()
         var downloadingObject = DownloadingObject()
         var topLevelPlantJSONData = downloadingObject.
                 downloadJSONDataFromLink("http://plantplaces.com/perl/mobile/flashcard.pl")
@@ -39,10 +39,12 @@ class ParsePlantUtility {
 
             }
 
+            allPlantObjects.add(plantObject)
+
             index++
         }
 
-        return allPlantObject
+        return allPlantObjects
 
 
     }
