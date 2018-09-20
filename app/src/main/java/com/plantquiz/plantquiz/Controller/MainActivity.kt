@@ -19,12 +19,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import com.plantquiz.plantquiz.Model.DownloadingObject
 import com.plantquiz.plantquiz.Model.ParsePlantUtility
 import com.plantquiz.plantquiz.Model.Plant
 import com.plantquiz.plantquiz.R
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,11 +53,6 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
 
-        if (checkForInternetConnection()) {
-            val innerClassObject = DownloadingPlantTask()
-            innerClassObject.execute()
-
-        }
 
 
         /*Toast.makeText(this, "The ON CREATE Method is Called",
@@ -98,6 +95,33 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(galleryIntent, OPEN_PHOTO_GALLERY_BUTTON_REQUEST_ID)
 
         })
+
+
+
+        // See the next Plain
+        btnNextPlant.setOnClickListener(View.OnClickListener {
+
+            try {
+
+                if (checkForInternetConnection()) {
+                    val innerClassObject = DownloadingPlantTask()
+                    innerClassObject.execute()
+
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            button1.setBackgroundColor(Color.LTGRAY)
+            button2.setBackgroundColor(Color.LTGRAY)
+            button3.setBackgroundColor(Color.LTGRAY)
+            button4.setBackgroundColor(Color.LTGRAY)
+        })
+
+
+
+
+
 
 
 
@@ -249,6 +273,34 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    //Download Image Process
+
+    inner class DownloadingImageTask: AsyncTask<String, Int, Bitmap?>() {
+
+        override fun doInBackground(vararg pictureName: String?): Bitmap? {
+
+            try {
+
+                val downloadingObject = DownloadingObject()
+                val plantBitmap: Bitmap? = downloadingObject.downloadPlantPicture(pictureName[0])
+
+                return plantBitmap
+
+            }catch (e: Exception) {
+
+                e.printStackTrace()
+            }
+
+            return null
+        }
+
+        override fun onPostExecute(result: Bitmap?) {
+            super.onPostExecute(result)
+
+            img_View.setImageBitmap(result)
+        }
+
+    }
 
 
     fun button1onclick(buttonView: View) {
@@ -350,6 +402,9 @@ class MainActivity : AppCompatActivity() {
 
                 correctAnswerIndex = (Math.random() * allRandomPlants.size).toInt()
                 correctPlant = allRandomPlants.get(correctAnswerIndex)
+
+                val downloadingImageTask = DownloadingImageTask()
+                downloadingImageTask.execute(allRandomPlants.get(correctAnswerIndex).pictureName)
             }
 
         }

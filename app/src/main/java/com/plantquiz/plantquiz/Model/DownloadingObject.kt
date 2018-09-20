@@ -1,5 +1,7 @@
 package com.plantquiz.plantquiz.Model
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import java.io.BufferedInputStream
 import java.io.BufferedReader
 import java.io.IOException
@@ -38,6 +40,28 @@ class DownloadingObject {
         return stringBuilder.toString()
 
 
+    }
+
+    fun downloadPlantPicture(pictureName: String?): Bitmap? {
+
+        var bitmap: Bitmap? = null
+
+        val pictureLink: String = PLANTPLACES_COM + "/photos/$pictureName"
+
+        val pictureURL = URL(pictureLink)
+        val inputStream = pictureURL.openConnection().getInputStream()
+        if (inputStream != null) {
+
+            bitmap = BitmapFactory.decodeStream(inputStream)
+
+        }
+
+        return bitmap
+
+    }
+
+    companion object {
+        val PLANTPLACES_COM = "http://www.plantplaces.com"
     }
 
 
