@@ -2,23 +2,27 @@ package com.plantquiz.plantquiz.Controller
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.os.AsyncTask
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
 import android.support.v7.app.AppCompatActivity
+import android.util.DisplayMetrics
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.util.TypedValue
+import android.view.*
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import com.daimajia.androidanimations.library.Techniques
+import com.daimajia.androidanimations.library.YoYo
 import com.plantquiz.plantquiz.Model.DownloadingObject
 import com.plantquiz.plantquiz.Model.ParsePlantUtility
 import com.plantquiz.plantquiz.Model.Plant
@@ -26,6 +30,7 @@ import com.plantquiz.plantquiz.R
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import org.intellij.lang.annotations.Flow
 import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
@@ -45,7 +50,10 @@ class MainActivity : AppCompatActivity() {
 
     var correctAnswerIndex: Int = 0
     var correctPlant: Plant? = null
-    
+
+    var numberOfTimesUserAnsweredCorrectly: Int = 0
+    var numberOfTimesUserAnsweredinCorrectly: Int = 0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +61,13 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
 
+        setProgressBar(false)
+        displayUIWidgets(false)
 
+        YoYo.with(Techniques.Pulse)
+                .duration(700)
+                .repeat(5)
+                .playOn(btnNextPlant)
 
         /*Toast.makeText(this, "The ON CREATE Method is Called",
                 Toast.LENGTH_SHORT).show()
@@ -101,6 +115,8 @@ class MainActivity : AppCompatActivity() {
         // See the next Plain
         btnNextPlant.setOnClickListener(View.OnClickListener {
 
+            setProgressBar(true)
+
             try {
 
                 if (checkForInternetConnection()) {
@@ -112,22 +128,39 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
 
-            button1.setBackgroundColor(Color.LTGRAY)
-            button2.setBackgroundColor(Color.LTGRAY)
-            button3.setBackgroundColor(Color.LTGRAY)
-            button4.setBackgroundColor(Color.LTGRAY)
+//            button1.setBackgroundColor(Color.LTGRAY)
+//            button2.setBackgroundColor(Color.LTGRAY)
+//            button3.setBackgroundColor(Color.LTGRAY)
+//            button4.setBackgroundColor(Color.LTGRAY)
+
+            var gradientColor: IntArray = IntArray(2)
+            gradientColor.set(0, Color.parseColor("#f1d135"))
+            gradientColor.set(1, Color.parseColor("#da0229"))
+            var gradientDrawable: GradientDrawable =
+                    GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,gradientColor)
+            var convertDipValue = dipToFloat(this@MainActivity, 10f)
+            gradientDrawable.setCornerRadius(convertDipValue)
+            gradientDrawable.setStroke(5, Color.parseColor("#ffffff"))
+
+
+
+            button1.setBackground(gradientDrawable)
+            button2.setBackground(gradientDrawable)
+            button3.setBackground(gradientDrawable)
+            button4.setBackground(gradientDrawable)
+
         })
-
-
-
-
-
-
-
 
 
     }
 
+    fun dipToFloat(context: Context, dipValue: Float): Float {
+
+        val metrics: DisplayMetrics = context.getResources().getDisplayMetrics()
+
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, metrics)
+
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -265,9 +298,13 @@ class MainActivity : AppCompatActivity() {
 
         if (userGuess == correctAnswerIndex) {
             txtState.setText("Right!")
+            numberOfTimesUserAnsweredCorrectly++
+            txtRightAnswer.setText("$numberOfTimesUserAnsweredCorrectly")
         } else {
             var correctPlantName = correctPlant.toString()
             txtState.setText("Wrong. Choose : $correctPlantName")
+            numberOfTimesUserAnsweredinCorrectly++
+            txtWrongAnswer.setText("$numberOfTimesUserAnsweredinCorrectly")
         }
 
     }
@@ -296,6 +333,20 @@ class MainActivity : AppCompatActivity() {
 
         override fun onPostExecute(result: Bitmap?) {
             super.onPostExecute(result)
+
+
+            setProgressBar(false)
+            displayUIWidgets(true)
+
+            playAnimationOn(txtState, Techniques.Tada)
+            playAnimationOn(button1, Techniques.RollIn)
+            playAnimationOn(button2, Techniques.RollIn)
+            playAnimationOn(button3, Techniques.RollIn)
+            playAnimationOn(button4, Techniques.RollIn)
+            playAnimationOn(txtRightAnswer, Techniques.FadeIn)
+            playAnimationOn(txtWrongAnswer, Techniques.FadeInDown)
+
+
 
             img_View.setImageBitmap(result)
         }
@@ -459,6 +510,66 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT).show()
     }
 
+
+
+    // ProgressBar Visibility
+    private fun setProgressBar(show: Boolean) {
+
+        if (show) {
+
+            linearLayoutProgressBar.setVisibility(View.VISIBLE)
+            progressBar.setVisibility(View.VISIBLE)
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        } else if (!show) {
+
+            linearLayoutProgressBar.setVisibility(View.GONE)
+            progressBar.setVisibility(View.GONE)
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        }
+
+    }
+
+
+    // Set Visibility of ui widgets
+
+    private fun displayUIWidgets(display: Boolean) {
+
+        if (display) {
+
+            img_View.setVisibility(View.VISIBLE)
+            button1.setVisibility(View.VISIBLE)
+            button2.setVisibility(View.VISIBLE)
+            button3.setVisibility(View.VISIBLE)
+            button4.setVisibility(View.VISIBLE)
+            txtState.setVisibility(View.VISIBLE)
+            txtWrongAnswer.setVisibility(View.VISIBLE)
+            txtRightAnswer.setVisibility(View.VISIBLE)
+
+        } else if (!display) {
+
+            img_View.setVisibility(View.INVISIBLE)
+            button1.setVisibility(View.INVISIBLE)
+            button2.setVisibility(View.INVISIBLE)
+            button3.setVisibility(View.INVISIBLE)
+            button4.setVisibility(View.INVISIBLE)
+            txtState.setVisibility(View.INVISIBLE)
+            txtWrongAnswer.setVisibility(View.INVISIBLE)
+            txtRightAnswer.setVisibility(View.INVISIBLE)
+
+        }
+
+    }
+
+
+        private fun playAnimationOn(view: View?, technique: Techniques) {
+
+            YoYo.with(technique)
+                    .duration(700)
+                    .repeat(1)
+                    .playOn(view)
+
+        }
 
 
 }
